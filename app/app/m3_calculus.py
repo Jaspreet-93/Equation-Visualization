@@ -1,0 +1,72 @@
+import numpy as np
+except Exception:
+pass
+return Y
+
+
+
+
+def plot_with_features(expr, x0=None, xmin=-10, xmax=10, num=1000):
+X = np.linspace(xmin, xmax, num)
+Y = safe_eval(expr, X)
+
+
+# Roots (real)
+roots = list(solveset(expr, x, domain=S.Reals))
+
+
+# Derivative & tangent line at x0
+m = None
+y0 = None
+if x0 is not None:
+dexpr = diff(expr, x)
+f = lambdify(x, expr, 'numpy')
+df = lambdify(x, dexpr, 'numpy')
+try:
+y0 = float(f(x0))
+m = float(df(x0))
+except Exception:
+x0 = None # invalid point
+
+
+plt.figure(figsize=(8, 5))
+plt.plot(X, Y, label=f'f(x)={expr}')
+
+
+# Mark roots
+for r in roots:
+try:
+rv = float(r)
+plt.scatter([rv], [0], marker='o')
+except Exception:
+pass
+
+
+# Tangent
+if x0 is not None and m is not None and y0 is not None:
+T = np.linspace(x0-3, x0+3, 100)
+tangent = m*(T - x0) + y0
+plt.plot(T, tangent, linestyle='--', label=f'Tangent at x0={x0}')
+plt.scatter([x0], [y0])
+
+
+plt.axhline(0, linewidth=1)
+plt.axvline(0, linewidth=1)
+plt.grid(True)
+plt.legend()
+plt.xlabel('x')
+plt.ylabel('y')
+plt.title('Graph with Roots & Tangent')
+plt.show()
+
+
+
+
+if __name__ == '__main__':
+s = input("Enter f(x): ")
+expr = parse_expr(s)
+try:
+x0 = float(input("Enter x0 for tangent (or blank to skip): ") or 'nan')
+except Exception:
+x0 = float('nan')
+plot_with_features(expr, x0 if np.isfinite(x0) else None)

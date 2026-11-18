@@ -1,122 +1,196 @@
 # Smart Equation Visualizer & Solver
 
-A robust, interactive desktop application built with Python using **Tkinter**, **SymPy**, and **Matplotlib**. The project serves as an educational and mathematical utility to parse, visualize, analyze, and solve algebraic equations step-by-step.
+[![CI Build & Tests](https://github.com/Jaspreet-93/Equation-Visualization/actions/workflows/ci.yml/badge.svg)](https://github.com/Jaspreet-93/Equation-Visualization/actions/workflows/ci.yml)
+[![Python Version](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://www.python.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Tests: Unittest](https://img.shields.io/badge/tests-26%20passed-brightgreen.svg)](tests/)
+
+An interactive desktop application built with Python using **Tkinter**, **SymPy**, and **Matplotlib**. The application serves as an educational and mathematical suite to safely parse, plot, analyze, and solve algebraic equations step-by-step.
 
 ---
 
-## 🗺️ Project Execution Flowchart
+## 🌟 Key Features
 
-The following diagram represents the core execution flow of the application:
+- **Safe & Smart Parser**:
+  - Restricts execution to safe mathematical symbols and functions (`sin`, `cos`, `tan`, `sinh`, `cosh`, `exp`, `log`, `ln`, `sqrt`, `Abs`, `pi`, `e`).
+  - Supports user-friendly syntax such as **implicit multiplication** (e.g., `2x`, `3(x - 1)`), **caret powers** (e.g., `x^2`), and **equation notation** (e.g., `x^2 = 4` or `x^2 - 5x + 6 = 0`).
+
+- **Interactive Canvas & Navigation Toolbar**:
+  - Embedded Matplotlib figure within Tkinter utilizing `FigureCanvasTkAgg` and `NavigationToolbar2Tk`.
+  - Full pan, zoom, reset, and high-resolution export capabilities.
+  - Asymptote and domain boundary protection (handles singularities like $1/x$ gracefully without crashes).
+
+- **Root Solver**:
+  - Finds algebraic solutions and numerical approximations for $f(x) = 0$.
+  - Distinguishes real roots from complex roots.
+  - Automatically places coordinate markers and labels on the graph.
+
+- **Calculus Engine**:
+  - **Derivatives**: Computes first and higher-order symbolic derivatives $f'(x)$, $f''(x)$.
+  - **Tangent & Normal Lines**: Computes slope $m = f'(x_0)$ and plots tangent lines at any user-defined point $x_0$.
+  - **Integrals**: Computes both indefinite antiderivatives $\int f(x) dx + C$ and definite integrals $\int_{x_{\min}}^{x_{\max}} f(x) dx$.
+  - **Limits**: Evaluates directional and two-sided limits $\lim_{x \to x_0} f(x)$.
+
+- **Optimization & Extrema Classification**:
+  - Solves for critical points where $f'(x) = 0$.
+  - Employs the **Second Derivative Test** ($f''(x)$) to classify points into **Local Minimum**, **Local Maximum**, or **Inflection Points**.
+  - Computes global extrema over the selected interval $[x_{\min}, x_{\max}]$.
+  - Color-coded extrema overlay markers directly on the graph.
+
+- **Step-by-Step Solver Dialog**:
+  - Dedicated multi-tabbed explanation window detailing:
+    - Quadratic formula discriminant derivation ($\Delta = b^2 - 4ac$) and linear isolation.
+    - Differentiation step-by-step applying power, product, and chain rules.
+    - Antiderivative integration formulas.
+    - First and second derivative optimization tests.
+
+- **Preset Library**:
+  - Instant dropdown menu with classic equations:
+    - Polynomials: $x^2 - 5x + 6$, $x^3 - 3x$, $x^4 - 4x^2 + 2$
+    - Oscillatory & Damped: $\sin(x) \cdot x$, $\cos(2x) - \sin(x)$
+    - Gaussian / Rational: $e^{-x^2}$, $\frac{x}{x^2 + 1}$
+
+---
+
+## 🗺️ Execution Flowchart
 
 ```mermaid
 flowchart TD
-    A([Start Application]) --> B[Tkinter GUI Window Launched]
-    B --> C{User Action}
+    Start([Launch Application]) --> GUI[Tkinter GUI Initialized]
+    GUI --> Input[User Enters Equation or Selects Preset]
     
-    C -->|Input Equation & Click 'Plot Graph'| D[Parse Expr safely with SymPy local dict]
-    D --> E[Convert Expr to NumPy function via lambdify]
-    E --> F[Generate x-axis interval & evaluate points safely]
-    F --> G[Render plot inside Tkinter embedded Matplotlib canvas]
+    Input --> Parse[Safe Parser with SymPy Transformations\n• Implicit Multiplication 2x -> 2*x\n• Caret Power x^2 -> x**2\n• Equation Parsing lhs = rhs]
     
-    C -->|Input Equation & Click 'Solve Roots'| H[Parse Expr safely with SymPy]
-    H --> I[Solve equation f\(x\) = 0 algebraically]
-    I --> J[Display list of Roots in popup messagebox]
+    Parse --> Action{User Action}
+
+    Action -->|Plot Graph| Plot[Generate NumPy Array with NaN Singularity Handling]
+    Plot --> Canvas[Render on Matplotlib Canvas + Navigation Toolbar]
+    Canvas --> Overlays{Toggles Active?}
+    Overlays -->|Roots| PlotRoots[Plot Roots Coordinates & Dots]
+    Overlays -->|Extrema| PlotExtrema[Plot Min / Max Labeled Markers]
+    Overlays -->|Tangent| PlotTangent[Compute & Plot Tangent Line at x0]
     
-    C -->|Input Equation & Click 'Derivative'| K[Parse Expr safely with SymPy]
-    K --> L[Calculate symbolic derivative f'\(x\) via diff]
-    L --> M[Display f'\(x\) derivative expression in popup]
-    
-    C -->|Input Equation & Click 'Max/Min'| N[Parse Expr safely with SymPy]
-    N --> O[Calculate derivative f'\(x\) & solve f'\(x\) = 0]
-    O --> P[Substitute critical points back to f\(x\) to find turning coordinate pairs]
-    P --> Q[Display Critical Points in popup messagebox]
-    
-    G --> R([Wait for Next Interaction])
-    J --> R
-    M --> R
-    Q --> R
+    Action -->|Solve Roots| Roots[Symbolic Root Extraction via solveset/solve]
+    Roots --> ShowRoots[Display Real & Complex Roots Dialog]
+
+    Action -->|Derivative & Tangent| Deriv[Compute f'\(x\) & Tangent Line at x0]
+    Deriv --> ShowDeriv[Display Derivative & Slope Summary]
+
+    Action -->|Integral| Integ[Compute Indefinite & Definite Integrals]
+    Integ --> ShowInteg[Display Antiderivative & Area]
+
+    Action -->|Max / Min| Opt[Calculate Critical Points & Second Derivative Test]
+    Opt --> ShowOpt[Classify Local Min/Max and Global Extrema]
+
+    Action -->|Step-by-Step Solver| Steps[Generate Step-by-Step Mathematical Explanation]
+    Steps --> ShowSteps[Open Multi-Tabbed Dialog: Roots, Derivative, Integral, Optimization]
+
+    PlotRoots --> Idle([Wait for User Event])
+    PlotExtrema --> Idle
+    PlotTangent --> Idle
+    ShowRoots --> Idle
+    ShowDeriv --> Idle
+    ShowInteg --> Idle
+    ShowOpt --> Idle
+    ShowSteps --> Idle
 ```
-
----
-
-## 🚀 Working & Execution Flow
-
-1. **Safety First (Expression Parsing)**:
-   - To prevent execution of arbitrary/malicious code (e.g. `eval` exploits), the application processes user-input equations via custom local dictionaries.
-   - SymPy's `sympify` is restricted to an allowlist containing variable `x` and standard math functions (`sin`, `cos`, `tan`, `exp`, `log`, `sqrt`, `Abs`).
-
-2. **Visualizing the Graph**:
-   - The expression is converted to a fast-evaluating NumPy function using `lambdify`.
-   - Domain errors (like dividing by zero or taking the square root of negative numbers at certain points) are handled gracefully on a point-by-point basis using try-catch blocks to prevent application crashes and display clean graphs.
-
-3. **Symbolic Solving & Optimization**:
-   - Roots are solved algebraically using SymPy’s exact solver.
-   - Derivatives are calculated symbolically using the `diff` method.
-   - Optimization points (turning points) are found by calculating $f'(x)$, solving for $f'(x) = 0$ to get critical inputs, and then substituting these values back into $f(x)$ to obtain coordinate pairs.
 
 ---
 
 ## 🛠️ Technology Stack
 
-- **Python 3.8+**: Core programming language.
-- **Tkinter**: Standard GUI library for modern-feeling widget layout.
-- **SymPy**: Computer Algebra System (CAS) for symbolic math, differentiation, equation solving, and formula formatting.
-- **Matplotlib**: Plotting and rendering engine, integrated directly into Tkinter frames using a `FigureCanvasTkAgg` canvas backend.
-- **NumPy**: Fast vectorized numerical computations for smooth multi-point plotting.
+| Technology | Purpose |
+| :--- | :--- |
+| **Python 3.8+** | Core runtime environment |
+| **Tkinter / ttk** | Native desktop graphical user interface with themed widgets |
+| **SymPy** | Computer Algebra System (CAS) for symbolic parsing, differentiation, and solving |
+| **Matplotlib** | 2D mathematical plotting engine with `FigureCanvasTkAgg` and toolbar integration |
+| **NumPy** | High-performance vectorized numerical evaluations over custom intervals |
+| **Unittest** | Built-in automated unit testing framework |
+| **GitHub Actions** | Automated Continuous Integration (CI) matrix across Python 3.9 - 3.12 |
 
 ---
 
-## 📂 Codebase Modules & Architecture
+## 📂 Project Structure
 
-The application is structured into modular layers that build upon each other:
-
-| Module File | Relative Path | Purpose & Functionality |
-| :--- | :--- | :--- |
-| **Math Engine** | [`app/m1_math_engine.py`](file:///d:/PROJECTS/equation%20visulaization/app/m1_math_engine.py) | Safely parses strings and computes real roots algebraically. |
-| **Plotter** | [`app/m2_plot.py`](file:///d:/PROJECTS/equation%20visulaization/app/m2_plot.py) | Renders standard, standalone Matplotlib graph windows of the expression. |
-| **Calculus Engine** | [`app/app/m3_calculus.py`](file:///d:/PROJECTS/equation%20visulaization/app/app/m3_calculus.py) | Finds real roots and computes/plots tangent lines at a user-specified tangent point $x_0$. |
-| **Optimizer** | [`app/app/app/m4_optimization.py`](file:///d:/PROJECTS/equation%20visulaization/app/app/app/m4_optimization.py) | Dedicated safe-plotting functionality for mathematical optimization. |
-| **Step Explainer** | [`app/app/app/app/m5_steps.py`](file:///d:/PROJECTS/equation%20visulaization/app/app/app/app/m5_steps.py) | Generates step-by-step explanations for solving polynomial roots and derivatives. |
-| **Main UI Entry** | [`app/app/app/app/smart_eq_app.py`](file:///d:/PROJECTS/equation%20visulaization/app/app/app/app/smart_eq_app.py) | Combines all features into an interactive Tkinter graphical interface. |
+```text
+.
+├── .github/
+│   └── workflows/
+│       └── ci.yml               # GitHub Actions CI matrix workflow
+├── app/
+│   ├── __init__.py              # Package exports
+│   ├── math_engine.py           # Safe parser, symbol allowlist & root solver
+│   ├── plotter.py               # Curve evaluation, canvas rendering & overlays
+│   ├── calculus.py              # Derivatives, integrals, tangent & normal lines
+│   ├── optimization.py          # Critical points, 2nd derivative test & extrema
+│   ├── step_explainer.py        # Step-by-step math explanations generator
+│   ├── smart_eq_app.py          # Modern Tkinter GUI application
+│   ├── m1_math_engine.py        # Legacy compatibility wrapper
+│   ├── m2_plot.py               # Legacy compatibility wrapper
+│   └── app/
+│       ├── m3_calculus.py       # Legacy compatibility wrapper
+│       └── app/
+│           ├── m4_optimization.py # Legacy compatibility wrapper
+│           └── app/
+│               ├── m5_steps.py    # Legacy compatibility wrapper
+│               └── smart_eq_app.py # Legacy compatibility wrapper
+├── tests/
+│   ├── __init__.py
+│   ├── test_math_engine.py      # Tests for parsing, syntax & roots
+│   ├── test_calculus.py         # Tests for derivatives, integrals & tangents
+│   ├── test_optimization.py     # Tests for local/global extrema classification
+│   ├── test_step_explainer.py   # Tests for step generation
+│   └── test_plotter.py          # Tests for array generation & singularity safety
+├── .gitignore                   # Ignore caches, virtual environments, bytecode
+├── main.py                      # Primary application launcher
+├── pyproject.toml               # Modern Python package configuration
+├── README.md                    # Project documentation
+└── requirements.txt             # Direct project dependencies
+```
 
 ---
 
-## 💻 Setup & Commands
+## 💻 Installation & Quick Start
 
-Follow these steps to set up and run the application on your local system:
-
-### 1. Prerequisites
-Ensure you have Python 3.8 or above installed on your machine. You can verify your python version by running:
+### 1. Clone the Repository
 ```bash
-python --version
+git clone https://github.com/Jaspreet-93/Equation-Visualization.git
+cd Equation-Visualization
 ```
 
 ### 2. Install Dependencies
-Run the following command to install the required libraries:
 ```bash
-pip install sympy matplotlib numpy
+pip install -r requirements.txt
 ```
 
-### 3. Run the GUI Application
-To run the primary Tkinter application:
+### 3. Run the Application
+Launch the graphical user interface with either:
 ```bash
-python app/app/app/app/smart_eq_app.py
+python main.py
+```
+or
+```bash
+python -m app.smart_eq_app
 ```
 
-### 4. Run Individual Modules (Optional CLI Testing)
-Each module contains a CLI testing harness when executed directly. For example:
+---
 
-- To test the **Math Parser & Solver** CLI:
-  ```bash
-  python app/m1_math_engine.py
-  ```
+## 🧪 Running Unit Tests
 
-- To test **Calculus & Tangent plotting** CLI:
-  ```bash
-  python app/app/m3_calculus.py
-  ```
+Run the complete test suite locally:
+```bash
+python -m unittest discover -v tests
+```
 
-- To test the **Step Explainer** CLI:
-  ```bash
-  python app/app/app/app/m5_steps.py
-  ```
+Expected output:
+```text
+Ran 26 tests in ~0.5s
+OK
+```
+
+---
+
+## 📄 License
+
+This project is licensed under the [MIT License](LICENSE).

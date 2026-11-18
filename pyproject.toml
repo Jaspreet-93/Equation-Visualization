@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "equation-visualization"
+version = "1.0.0"
+description = "Interactive Equation Visualizer, Calculus Engine, and Step-by-Step Solver with Tkinter & SymPy"
+readme = "README.md"
+requires-python = ">=3.8"
+license = { text = "MIT" }
+authors = [
+    { name = "Jaspreet" }
+]
+keywords = [
+    "math",
+    "visualization",
+    "sympy",
+    "matplotlib",
+    "tkinter",
+    "calculus",
+    "solver",
+    "optimization"
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering :: Mathematics",
+    "Topic :: Scientific/Engineering :: Visualization",
+]
+dependencies = [
+    "sympy>=1.12.0",
+    "matplotlib>=3.7.0",
+    "numpy>=1.24.0",
+]
+
+[project.gui-scripts]
+equation-visualizer = "app.smart_eq_app:main"

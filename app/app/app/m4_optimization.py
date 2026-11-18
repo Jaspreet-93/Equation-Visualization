@@ -1,47 +1,29 @@
-import numpy as np
+"""
+Legacy Module Wrapper: m4_optimization.py
+Provides true optimization analysis (critical points, classification, and extrema plotting).
+"""
+
 import matplotlib.pyplot as plt
-from sympy import symbols, sympify, lambdify
+from app.math_engine import x, ALLOWED_SYMBOLS as ALLOWED, parse_math_expression as parse_expr
+from app.optimization import find_critical_points, find_global_extrema
+from app.plotter import render_plot_on_axes
 
-x = symbols('x')
-ALLOWED = {
-    'x': x,
-    'sin': __import__('sympy').sin,
-    'cos': __import__('sympy').cos,
-    'tan': __import__('sympy').tan,
-    'exp': __import__('sympy').exp,
-    'log': __import__('sympy').log,
-    'sqrt': __import__('sympy').sqrt,
-    'Abs': __import__('sympy').Abs
-}
+def analyze_and_plot_extrema(expr, xmin=-10, xmax=10):
+    print("Finding critical points...")
+    cps = find_critical_points(expr)
+    for cp in cps:
+        print(f"  Critical point at x = {cp['x']:.4f}, y = {cp['y']:.4f} -> {cp['nature']}")
 
-def parse_expr(s):
-    return sympify(s, locals=ALLOWED)
+    extrema = find_global_extrema(expr, xmin, xmax)
+    print(f"Global min on [{xmin}, {xmax}]: {extrema['global_min']}")
+    print(f"Global max on [{xmin}, {xmax}]: {extrema['global_max']}")
 
-def plot_function(expr, xmin=-10, xmax=10, num=1000):
-    f = lambdify(x, expr, 'numpy')
-    X = np.linspace(xmin, xmax, num)
-    # Safely evaluate (handle domain errors)
-    Y = np.empty_like(X, dtype=float)
-    Y[:] = np.nan
-    for i, t in enumerate(X):
-        try:
-            val = f(t)
-            if np.isfinite(val):
-                Y[i] = val
-        except Exception:
-            pass
-    plt.figure(figsize=(8, 5))
-    plt.plot(X, Y)
-    plt.axhline(0, linewidth=1)
-    plt.axvline(0, linewidth=1)
-    plt.grid(True)
-    plt.xlabel('x')
-    plt.ylabel('f(x)')
-    plt.title(f'f(x) = {expr}')
+    fig, ax = plt.subplots(figsize=(8, 5))
+    render_plot_on_axes(ax, expr, xmin=xmin, xmax=xmax, show_roots=False, show_extrema=True)
+    plt.tight_layout()
     plt.show()
 
 if __name__ == '__main__':
-    s = input("Enter f(x): ")
+    s = input("Enter f(x): ") or "x**3 - 3*x"
     expr = parse_expr(s)
-    plot_function(expr)
-
+    analyze_and_plot_extrema(expr)
